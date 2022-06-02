@@ -3,19 +3,17 @@ Step 3. Analyze each cell of the grid to search for lysis plaque.
 For each plate, the grid was previously located. 
 """
 
-from ast import keyword
 import numpy as np
 import imageio
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
 import pandas as pd
-import shutil
 
 import cv2
 from cv2 import createBackgroundSubtractorMOG2
 from skimage.filters import threshold_otsu
-from skimage.morphology import binary_dilation
+from skimage.morphology import binary_erosion, binary_dilation
 from skimage.measure import find_contours
 from skimage.restoration import rolling_ball
 from scipy.ndimage import binary_fill_holes
@@ -61,22 +59,19 @@ def find_plaque(patch):
         if perimeter == 0:
             continue
         circularity = 4 * np.pi * (area / (perimeter ** 2))
-        print(circularity)
         if area > 2000 and circularity > 0.8:
             p = 1
     return p
 
 predictions = []
-for k, ifl in enumerate(sorted(os.listdir(directory))[:5]):
+for k, ifl in enumerate(sorted(os.listdir(directory))):
     extension = ifl.split(".")[-1]  # get the file extension
 
     # if extension in ["png", "PNG", "jpg", "jpeg", "tif", "tiff"]:
-    if ifl == "spotassay_019_01.jpg":
+    if ifl == "spotassay_022_01.jpg":
         if k % 100 == 0:
             dir_size = len(os.listdir(directory))
             print(f"Extracting image {k}/{dir_size}.")
-
-        print(ifl)
 
         im = imageio.imread(directory + "/" + ifl)
         grid = grids[k]
@@ -91,7 +86,7 @@ for k, ifl in enumerate(sorted(os.listdir(directory))[:5]):
             top, bottom, left, right = np.max([0, x - patch_x]), np.min([x + patch_x, height]), np.max([0, y - patch_y]), np.min([width, y + patch_y])
             patch = im[top:bottom, left:right]# - background[top:bottom, left:right]
             thresh = threshold_otsu(patch)
-            patch = binary_fill_holes(patch > thresh)
+            patch = binary_dilation(binary_erosion(binary_fill_holes(patch > thresh)))
 
             p = find_plaque(patch)
             pred.append(p)
@@ -106,7 +101,8 @@ for k, ifl in enumerate(sorted(os.listdir(directory))[:5]):
             d[str(j)] = p
         predictions.append(d)
 
-print(d)
 predictions = pd.DataFrame(d, index=[0])
+
+predictions.to_csv(save_path, sep=";", index=False)
 
 print(predictions)
