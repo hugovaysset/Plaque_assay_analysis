@@ -198,7 +198,7 @@ def set_all_zeros(layer):
 
     for closer_idx in range(96):
         polygons[z * 96 + closer_idx] = np.array([[z, 0, 0], [z, 0, 0], [z, 0, 0], [z, 0, 0]])
-        layer.add(polygons[z * 96 + closer_idx])
+        # layer.add(polygons[z * 96 + closer_idx])
 
 @p_layer.bind_key("s")
 def save_predictions(layer):
