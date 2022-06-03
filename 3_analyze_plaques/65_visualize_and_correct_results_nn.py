@@ -38,7 +38,7 @@ names, stack, predictions, polygons, grids = [], [], [], [], []
 grid_size = (96, 96)
 final_im_shape = (1500, 1500)
 k = 0
-init_idx, n_images = 250, 100
+init_idx, n_images = 250, 30
 for f in sorted(os.listdir(predictions_dir))[init_idx:init_idx+n_images]:
 
     if f.endswith(".csv"):
